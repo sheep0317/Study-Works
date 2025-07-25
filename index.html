@@ -1102,6 +1102,9 @@
       wishlist = wishlist.filter(item => item.id !== productId);
       showToast(`已將 ${product.name} 從收藏中移除`);
       
+      // 关键修复：确保数据同步到本地存储
+      saveWishlist();
+      // 重新渲染相关界面
       renderWishlist();
       renderProducts();
       
@@ -1144,6 +1147,9 @@
       if (product) {
         cart = cart.filter(item => item.id !== productId);
         showToast(`已將 ${product.name} 從購物車移除`);
+        // 关键修复：确保数据同步到本地存储
+        saveCart();
+        // 重新渲染购物车
         renderCart();
       }
     }
@@ -1154,6 +1160,8 @@
       
       if (confirm('確定要清空購物車嗎？')) {
         cart = [];
+        // 关键修复：确保数据同步到本地存储
+        saveCart();
         renderCart();
         // 關閉購物車面板
         toggleCart(false);
@@ -1167,6 +1175,8 @@
       
       if (confirm('確定要清空收藏夾嗎？')) {
         wishlist = [];
+        // 关键修复：确保数据同步到本地存储
+        saveWishlist();
         renderWishlist();
         renderProducts();
         // 關閉收藏夾面板
