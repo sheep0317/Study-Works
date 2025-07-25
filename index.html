@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>承錡購物網站</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FF6B00', // 主色：活力橙
+            secondary: '#3498db', // 輔色：深藍
+            neutral: {
+              100: '#f8f9fa',
+              200: '#e9ecef',
+              300: '#dee2e6',
+              400: '#ced4da',
+              500: '#adb5bd',
+              600: '#6c757d',
+              700: '#495057',
+              800: '#343a40',
+              900: '#212529',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+  /* 移除@layer utilities，直接使用标准CSS定义 */
+  .content-auto {
+    content-visibility: auto;
+  }
+  
+  .card-hover {
+    transition: all 300ms ease;
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .btn-primary {
+    background-color: #FF6B00;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 0.5rem;
+    transition: all 200ms ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .btn-primary:hover {
+    background-color: rgba(255, 107, 0, 0.9);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+  }
+  
+  .btn-secondary {
+    background-color: #3498db;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 0.5rem;
+    transition: all 200ms ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .btn-secondary:hover {
+    background-color: rgba(52, 152, 219, 0.9);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+  }
+  
+  .btn-outline {
+    border: 1px solid #FF6B00;
+    color: #FF6B00;
+    padding: 8px 16px;
+    border-radius: 0.5rem;
+    transition: all 200ms ease;
+  }
+  
+  .btn-outline:hover {
+    background-color: rgba(255, 107, 0, 0.1);
+  }
+  
+  .btn-outline.active {
+    background-color: rgba(255, 107, 0, 0.1);
+  }
+  
+  .category-badge {
+    position: relative;
+    overflow: hidden;
+    border-radius: 9999px;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 300ms ease;
+    cursor: pointer;
+  }
+  
+  .category-badge.active {
+    background-color: #FF6B00;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .category-badge:not(.active) {
+    background-color: white;
+    color: #495057;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .category-badge:not(.active):hover {
+    background-color: #f8f9fa;
+  }
+</style>
+
+</head>
+<body class="font-inter bg-amber-50 text-neutral-800 min-h-screen flex flex-col">
+  <!-- 導航欄 -->
+  <header class="bg-black shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-shopping-bag text-primary text-2xl"></i>
+        <h1 class="text-xl font-bold text-white">承錡購物網站</h1>
+      </div>
+      
+      <!-- 增加了導航項目的間距 -->
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="#" class="text-white hover:text-primary transition-colors" data-category="all">首頁</a>
+        <a href="#" class="text-white hover:text-primary transition-colors" data-category="衣服">商品分類</a>
+        <a href="#" class="text-white hover:text-primary transition-colors">熱門商品</a>
+        <a href="#" class="text-white hover:text-primary transition-colors">關於我們</a>
+      </nav>
+      
+      <div class="flex items-center space-x-4">
+        <!-- 搜索框 -->
+        <div class="relative hidden md:block">
+          <input type="text" id="searchInput" placeholder="搜索商品..." class="search-input">
+          <button id="searchBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white hover:text-primary transition-colors">
+            <i class="fa fa-search"></i>
+          </button>
+          <!-- 搜索結果下拉框 -->
+          <div id="searchResults" class="absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg z-50 hidden max-h-60 overflow-y-auto"></div>
+        </div>
+        
+        <button class="relative text-white hover:text-primary transition-colors md:hidden" id="mobileSearchToggle">
+          <i class="fa fa-search text-lg"></i>
+        </button>
+        
+        <button class="relative text-white hover:text-primary transition-colors" id="wishlistToggle">
+          <i class="fa fa-heart-o text-lg"></i>
+          <span id="wishlistCount" class="absolute -top-2 -right-2 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+        </button>
+        
+        <button class="relative text-white hover:text-primary transition-colors" id="cartToggle">
+          <i class="fa fa-shopping-cart text-lg"></i>
+          <span id="cartCount" class="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+        </button>
+        
+        <button class="md:hidden text-white hover:text-primary transition-colors" id="mobileMenuToggle">
+          <i class="fa fa-bars text-lg"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 移動端搜索框 -->
+    <div id="mobileSearchContainer" class="md:hidden px-4 pb-3 hidden">
+      <div class="relative">
+        <input type="text" id="mobileSearchInput" placeholder="搜索商品..." class="search-input w-full">
+        <button id="mobileSearchBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white hover:text-primary transition-colors">
+          <i class="fa fa-search"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 移動端菜單 -->
+    <div id="mobileMenu" class="md:hidden bg-black border-t border-neutral-700 hidden">
+      <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+        <a href="#" class="text-white hover:text-primary transition-colors py-2" data-category="all">首頁</a>
+        <a href="#" class="text-white hover:text-primary transition-colors py-2" data-category="衣服">衣服</a>
+        <a href="#" class="text-white hover:text-primary transition-colors py-2" data-category="褲子">褲子</a>
+        <a href="#" class="text-white hover:text-primary transition-colors py-2" data-category="鞋子">鞋子</a>
+        <a href="#" class="text-white hover:text-primary transition-colors py-2" data-category="帽子">帽子</a>
+        <a href="#" class="text-white hover:text-primary transition-colors py-2" data-category="飾品">飾品</a>
+        <a href="#" class="text-white hover:text-primary transition-colors py-2">熱門商品</a>
+        <a href="#" class="text-white hover:text-primary transition-colors py-2">關於我們</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主要內容 -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <!-- 首頁Banner -->
+    <section class="mb-12">
+      <div class="relative bg-gradient-to-r from-secondary/90 to-primary/90 rounded-2xl overflow-hidden h-48 md:h-64 flex items-center">
+        <div class="absolute inset-0 opacity-20">
+          <img src="https://picsum.photos/id/1059/1200/400" alt="購物優惠活動" class="w-full h-full object-cover" />
+        </div>
+        <div class="container mx-auto px-6 relative z-10">
+          <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-white mb-2">夏季大促銷</h2>
+          <p class="text-white/90 mb-6 max-w-md">全館商品最低3折起，限時優惠，趕快選購！</p>
+          <button class="btn-primary">立即搶購</button>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 商品展示區 -->
+    <section class="mb-12">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h2 class="text-2xl font-bold text-neutral-800" id="categoryTitle">全部商品</h2>
+        
+        <!-- 美化的商品分類過濾器 -->
+        <div class="flex flex-wrap gap-3">
+          <div class="category-badge active" data-category="all">全部</div>
+          <div class="category-badge" data-category="衣服">
+            <i class="fa fa-tshirt mr-1"></i> 衣服
+          </div>
+          <div class="category-badge" data-category="褲子">
+            <i class="fa fa-socks mr-1"></i> 褲子
+          </div>
+          <div class="category-badge" data-category="鞋子">
+            <i class="fa fa-shoe-prints mr-1"></i> 鞋子
+          </div>
+          <div class="category-badge" data-category="帽子">
+            <i class="fa fa-user-tie mr-1"></i> 帽子
+          </div>
+          <div class="category-badge" data-category="飾品">
+            <i class="fa fa-gem mr-1"></i> 飾品
+          </div>
+        </div>
+      </div>
+      
+      <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- 商品卡片將由JavaScript動態生成 -->
+      </div>
+    </section>
+    
+    <!-- 特色服務 -->
+    <section class="mb-12">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-neutral-200 rounded-xl p-6 shadow-sm card-hover">
+          <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <i class="fa fa-truck text-primary text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">免費配送</h3>
+          <p class="text-neutral-600">訂單金額滿NT$1000即可享免費配送服務</p>
+        </div>
+        
+        <div class="bg-neutral-200 rounded-xl p-6 shadow-sm card-hover">
+          <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <i class="fa fa-shield text-primary text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">安全支付</h3>
+          <p class="text-neutral-600">多種支付方式，保障您的交易安全</p>
+        </div>
+        
+        <div class="bg-neutral-200 rounded-xl p-6 shadow-sm card-hover">
+          <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <i class="fa fa-refresh text-primary text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">七天無理由退換</h3>
+          <p class="text-neutral-600">收到商品七天內可申請退換貨</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 商品詳情頁面模態框 -->
+  <div id="productModal" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-neutral-800" id="modalProductName">商品名稱</h2>
+          <button id="closeProductModal" class="text-neutral-500 hover:text-neutral-800">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <img id="modalProductImage" src="" alt="商品圖片" class="w-full h-64 md:h-80 object-cover rounded-lg">
+          </div>
+          
+          <div>
+            <div class="flex items-center mb-4">
+              <span id="modalProductCategory" class="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded"></span>
+              <div class="ml-auto flex items-center">
+                <div class="flex text-yellow-400">
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star-half-o"></i>
+                </div>
+                <span class="ml-2 text-neutral-600 text-sm">(128 評價)</span>
+              </div>
+            </div>
+            
+            <p id="modalProductPrice" class="text-2xl font-bold text-primary mb-6">NT$0</p>
+            
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-2">商品說明</h3>
+              <p id="modalProductDescription" class="text-neutral-600"></p>
+            </div>
+            
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-2">數量</h3>
+              <div class="flex items-center w-32 border rounded-lg">
+                <button id="decreaseModalQty" class="px-3 py-2 text-neutral-600 hover:bg-neutral-100 transition-colors">
+                  <i class="fa fa-minus"></i>
+                </button>
+                <input type="number" id="modalProductQty" value="1" min="1" class="w-full text-center py-2 border-x focus:outline-none">
+                <button id="increaseModalQty" class="px-3 py-2 text-neutral-600 hover:bg-neutral-100 transition-colors">
+                  <i class="fa fa-plus"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button id="addToCartFromModal" class="btn-primary flex-grow">
+                <i class="fa fa-shopping-cart mr-2"></i> 加入購物車
+              </button>
+              <button id="addToWishlistFromModal" class="btn-secondary">
+                <i class="fa fa-heart-o mr-2" id="wishlistIconInModal"></i> 收藏
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-8">
+          <h3 class="text-xl font-semibold mb-4">商品詳細資訊</h3>
+          <div id="modalProductDetails" class="text-neutral-600 space-y-4 border-t pt-4">
+            <!-- 詳細資訊將由JavaScript動態生成 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 購物車浮動面板 -->
+  <div id="cartPanel" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="bg-white h-full w-full max-w-md ml-auto shadow-xl transform transition-transform duration-300 translate-x-full" id="cartSlide">
+      <div class="p-6 h-full flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold text-neutral-800">我的購物車</h2>
+          <button id="closeCart" class="text-neutral-500 hover:text-neutral-800">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <div id="cartItems" class="flex-grow overflow-y-auto mb-6">
+          <!-- 購物車項目將由JavaScript動態生成 -->
+          <p class="text-neutral-500 text-center py-8">目前購物車是空的。</p>
+        </div>
+        
+        <div id="cartSummary" class="hidden">
+          <div class="flex justify-between py-3 border-t border-neutral-200">
+            <span class="text-neutral-600">小計</span>
+            <span id="subtotal" class="font-medium">NT$0</span>
+          </div>
+          <div class="flex justify-between py-3 border-t border-neutral-200">
+            <span class="text-neutral-600">運費</span>
+            <span id="shipping" class="font-medium">NT$0</span>
+          </div>
+          <div class="flex justify-between py-3 border-t border-b border-neutral-200">
+            <span class="text-lg font-bold">總計</span>
+            <span id="total" class="text-lg font-bold text-primary">NT$0</span>
+          </div>
+          
+          <button class="btn-primary w-full mt-4" id="checkoutBtn">
+            前往結帳 <i class="fa fa-arrow-right ml-2"></i>
+          </button>
+          <button id="clearCartBtn" class="btn-outline w-full mt-3">
+            清空購物車
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 收藏夾浮動面板 -->
+  <div id="wishlistPanel" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="bg-white h-full w-full max-w-md ml-auto shadow-xl transform transition-transform duration-300 translate-x-full" id="wishlistSlide">
+      <div class="p-6 h-full flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold text-neutral-800">我的收藏</h2>
+          <button id="closeWishlist" class="text-neutral-500 hover:text-neutral-800">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <div id="wishlistItems" class="flex-grow overflow-y-auto mb-6">
+          <!-- 收藏項目將由JavaScript動態生成 -->
+          <p class="text-neutral-500 text-center py-8">目前沒有收藏商品。</p>
+        </div>
+        
+        <div class="hidden" id="wishlistActions">
+          <button id="clearWishlistBtn" class="btn-outline w-full">
+            清空收藏夾
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 頁腳 -->
+  <footer class="bg-neutral-800 text-white py-10">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold mb-4">承錡購物網站</h3>
+          <p class="text-neutral-400">提供最優質的商品和服務，讓您的購物體驗更加愉快。</p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">快速連結</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">首頁</a></li>
+            <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">商品分類</a></li>
+            <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">熱門商品</a></li>
+            <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">關於我們</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">顧客服務</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">常見問題</a></li>
+            <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">退換貨政策</a></li>
+            <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">配送說明</a></li>
+            <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">聯繫我們</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">聯繫我們</h3>
+          <ul class="space-y-2">
+            <li class="flex items-center text-neutral-400">
+              <i class="fa fa-map-marker mr-2"></i>
+              <span>台中市北屯區敦富路</span>
+            </li>
+            <li class="flex items-center text-neutral-400">
+              <i class="fa fa-phone mr-2"></i>
+              <span>0986992595</span>
+            </li>
+            <li class="flex items-center text-neutral-400">
+              <i class="fa fa-envelope mr-2"></i>
+              <span>a22451329@gmail.com</span>
+            </li>
+          </ul>
+          
+          <div class="flex space-x-4 mt-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center hover:bg-primary transition-colors">
+              <i class="fa fa-facebook"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center hover:bg-primary transition-colors">
+              <i class="fa fa-instagram"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center hover:bg-primary transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-neutral-700 mt-8 pt-6 text-center text-neutral-500">
+        <p>&copy; 2025 承錡購物網站 版權所有</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 商品資料，包含詳細資訊和分類
+    const products = [
+      { 
+        id: 1, 
+        category: "衣服", 
+        name: "休閒短袖T恤", 
+        price: 500, 
+        image: "https://images.pexels.com/photos/1261422/pexels-photo-1261422.jpeg", 
+        description: "舒適透氣的棉質T恤，適合日常穿著，多種顏色可選。",
+        details: `
+          <p>材質：100% 棉</p>
+          <p>顏色：白色、黑色、灰色、藍色</p>
+          <p>尺寸：S、M、L、XL</p>
+          <p>洗滌方式：建議冷水機洗，低溫烘乾</p>
+          <p>產地：台灣</p>
+        `
+      },
+      { 
+        id: 2, 
+        category: "衣服", 
+        name: "長袖毛衣", 
+        price: 790, 
+        image: "https://images.pexels.com/photos/6995902/pexels-photo-6995902.jpeg", 
+        description: "舒適與時尚的完美結合。無論是日常穿搭或特殊場合，都能輕鬆展現您的個人風格。",
+        details: `
+          <p>材質：85% 聚酯纖維，15% 彈性纖維</p>
+          <p>顏色：黑色、深藍、灰色</p>
+          <p>尺寸：M、L、XL、XXL</p>
+          <p>特點：透氣網眼設計，反光細節</p>
+          <p>產地：中國</p>
+        `
+      },
+      { 
+        id: 3, 
+        category: "褲子", 
+        name: "修身牛仔褲", 
+        price: 1290, 
+        image: "https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg", 
+        description: "經典修身牛仔褲，舒適耐用，百搭款式。",
+        details: `
+          <p>材質：98% 棉，2% 彈性纖維</p>
+          <p>顏色：深藍、藍色、黑色</p>
+          <p>尺寸：28、29、30、31、32、33、34</p>
+          <p>版型：修身直筒</p>
+          <p>產地：越南</p>
+        `
+      },
+      { 
+        id: 4, 
+        category: "褲子", 
+        name: "休閒運動褲", 
+        price: 890, 
+        image: "https://images.pexels.com/photos/4611657/pexels-photo-4611657.jpeg", 
+        description: "舒適休閒運動褲，彈性腰帶設計，居家外出兩相宜。",
+        details: `
+          <p>材質：65% 棉，35% 聚酯纖維</p>
+          <p>顏色：黃色、綠色、深藍</p>
+          <p>尺寸：M、L、XL</p>
+          <p>特點：側邊口袋，彈性腳口</p>
+          <p>產地：台灣</p>
+        `
+      },
+      { 
+        id: 5, 
+        category: "鞋子", 
+        name: "慢跑運動鞋", 
+        price: 2490, 
+        image: "https://images.pexels.com/photos/1124466/pexels-photo-1124466.jpeg", 
+        description: "輕量緩震慢跑鞋，提供優異支撐和舒適度。",
+        details: `
+          <p>材質：透氣網布鞋面，橡膠大底</p>
+          <p>顏色：黑白、白紅</p>
+          <p>尺寸：38-44</p>
+          <p>特點：緩震中底，耐磨大底，透氣設計</p>
+          <p>產地：中國</p>
+        `
+      },
+      { 
+        id: 6, 
+        category: "鞋子", 
+        name: "休閒帆布鞋", 
+        price: 790, 
+        image: "https://images.pexels.com/photos/267326/pexels-photo-267326.jpeg", 
+        description: "經典款帆布鞋，輕便舒適，百搭時尚。",
+        details: `
+          <p>材質：帆布鞋面，橡膠底</p>
+          <p>顏色：白色、黑色、紅色</p>
+          <p>尺寸：37-43</p>
+          <p>特點：經典款式，舒適鞋墊</p>
+          <p>產地：中國</p>
+        `
+      },
+      { 
+        id: 7, 
+        category: "帽子", 
+        name: "棒球帽", 
+        price: 390, 
+        image: "https://images.pexels.com/photos/1007804/pexels-photo-1007804.jpeg", 
+        description: "經典棒球帽，防曬遮光，適合戶外活動。",
+        details: `
+          <p>材質：100% 棉</p>
+          <p>顏色：黑色、白色、灰色</p>
+          <p>特點：可調節後扣，透氣孔設計</p>
+          <p>產地：台灣</p>
+        `
+      },
+      { 
+        id: 8, 
+        category: "帽子", 
+        name: "漁夫帽", 
+        price: 450, 
+        image: "https://images.pexels.com/photos/2537658/pexels-photo-2537658.jpeg", 
+        description: "時尚漁夫帽，寬邊設計，防曬效果佳。",
+        details: `
+          <p>材質：棉麻混紡</p>
+          <p>顏色：米色、灰色、黑色、深綠</p>
+          <p>特點：可折疊，攜帶方便</p>
+          <p>產地：中國</p>
+        `
+      },
+      { 
+        id: 9, 
+        category: "飾品", 
+        name: "手錶", 
+        price: 590, 
+        image: "https://images.pexels.com/photos/3487862/pexels-photo-3487862.jpeg", 
+        description: "時間的精準與時尚品味，無論日常佩戴或出席重要場合。",
+        details: `
+          <p>材質：碳纖維</p>
+          <p>顏色：白色、黑色、銀色</p>
+   
+          <p>特點：卓越的抗拉強度和抗衝擊性，能有效抵抗日常磨損和外部衝擊。</p>
+          <p>產地：台灣</p>
+        `
+      },
+      { 
+        id: 10, 
+        category: "飾品", 
+        name: "項鍊", 
+        price: 800, 
+        image: "https://images.pexels.com/photos/66354/pexels-photo-66354.jpeg", 
+        description: "頸間的優雅點綴，能瞬間提升整體造型，展現獨特的個人魅力。",
+        details: `
+          <p>材質：95% 銀，5% 銅</p>
+          <p>顏色：混色組合</p>
+      
+          <p>特點：款式和長度的選擇，能表達佩戴者的個性和品味。</p>
+          <p>產地：中國</p>
+        `
+      }
+    ];
+
+    // 從localStorage取得購物車和收藏夾資料或初始化
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    let currentCategory = 'all'; // 當前顯示的分類
+    let currentProductId = null; // 當前查看的商品ID
+    
+    // DOM元素
+    const productsGrid = document.getElementById('productsGrid');
+    const categoryTitle = document.getElementById('categoryTitle');
+    const cartPanel = document.getElementById('cartPanel');
+    const cartSlide = document.getElementById('cartSlide');
+    const cartItems = document.getElementById('cartItems');
+    const cartSummary = document.getElementById('cartSummary');
+    const cartCount = document.getElementById('cartCount');
+    const subtotalEl = document.getElementById('subtotal');
+    const shippingEl = document.getElementById('shipping');
+    const totalEl = document.getElementById('total');
+    const clearCartBtn = document.getElementById('clearCartBtn');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchResults = document.getElementById('searchResults');
+    const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+    const mobileSearchContainer = document.getElementById('mobileSearchContainer');
+    const mobileSearchInput = document.getElementById('mobileSearchInput');
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const productModal = document.getElementById('productModal');
+    const closeProductModal = document.getElementById('closeProductModal');
+    const modalProductName = document.getElementById('modalProductName');
+    const modalProductImage = document.getElementById('modalProductImage');
+    const modalProductCategory = document.getElementById('modalProductCategory');
+    const modalProductPrice = document.getElementById('modalProductPrice');
+    const modalProductDescription = document.getElementById('modalProductDescription');
+    const modalProductDetails = document.getElementById('modalProductDetails');
+    const modalProductQty = document.getElementById('modalProductQty');
+    const decreaseModalQty = document.getElementById('decreaseModalQty');
+    const increaseModalQty = document.getElementById('increaseModalQty');
+    const addToCartFromModal = document.getElementById('addToCartFromModal');
+    const addToWishlistFromModal = document.getElementById('addToWishlistFromModal');
+    const wishlistIconInModal = document.getElementById('wishlistIconInModal');
+    const wishlistToggle = document.getElementById('wishlistToggle');
+    const wishlistPanel = document.getElementById('wishlistPanel');
+    const wishlistSlide = document.getElementById('wishlistSlide');
+    const wishlistItems = document.getElementById('wishlistItems');
+    const wishlistCount = document.getElementById('wishlistCount');
+    const wishlistActions = document.getElementById('wishlistActions');
+    const clearWishlistBtn = document.getElementById('clearWishlistBtn');
+    const closeWishlist = document.getElementById('closeWishlist');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    
+    // 渲染商品列表
+    function renderProducts(filteredProducts = null) {
+      const productsToRender = filteredProducts || 
+        (currentCategory === 'all' ? products : products.filter(p => p.category === currentCategory));
+      
+      productsGrid.innerHTML = '';
+      
+      if (productsToRender.length === 0) {
+        productsGrid.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <i class="fa fa-search text-4xl text-neutral-300 mb-4"></i>
+            <p class="text-neutral-500">沒有找到符合條件的商品</p>
+          </div>
+        `;
+        return;
+      }
+      
+      productsToRender.forEach(product => {
+        const isInWishlist = wishlist.some(item => item.id === product.id);
+        const wishlistIconClass = isInWishlist ? 'fa-heart text-red-500' : 'fa-heart-o text-neutral-500 hover:text-red-500';
+        
+        const productCard = document.createElement('div');
+        // 將商品卡片背景改為灰色 (bg-neutral-200)
+        productCard.className = 'bg-neutral-200 rounded-xl overflow-hidden shadow-sm card-hover cursor-pointer';
+        productCard.innerHTML = `
+          <div class="relative group">
+            <img src="${product.image}" alt="${product.name}" class="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105">
+            <button class="wishlistBtn absolute top-4 right-4 p-2 rounded-full bg-white/80 hover:bg-white transition-all duration-200" data-id="${product.id}" title="${isInWishlist ? '取消收藏' : '收藏'}">
+              <i class="fa ${wishlistIconClass} transition-colors duration-300"></i>
+            </button>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-semibold text-neutral-800">${product.name}</h3>
+              <span class="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded">${product.category}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <p class="text-lg font-bold text-primary">NT$${product.price}</p>
+              <div class="flex space-x-2">
+                <button class="addToCartBtn text-primary hover:text-primary/80 transition-colors" data-id="${product.id}" title="加入購物車">
+                  <i class="fa fa-shopping-cart"></i>
+                </button>
+                <button class="quickViewBtn text-neutral-500 hover:text-primary transition-colors" data-id="${product.id}">
+                  <i class="fa fa-eye"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        productsGrid.appendChild(productCard);
+        
+        // 點擊商品卡片打開詳情頁
+        productCard.addEventListener('click', (e) => {
+          // 如果點擊的是按鈕，不打開詳情頁
+          if (!e.target.closest('button')) {
+            openProductDetails(product.id);
+          }
+        });
+        
+        // 收藏按鈕事件
+        productCard.querySelector('.wishlistBtn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleWishlist(product.id);
+        });
+      });
+      
+      // 為加入購物車按鈕添加事件
+      document.querySelectorAll('.addToCartBtn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation(); // 阻止事件冒泡到卡片
+          const productId = parseInt(btn.dataset.id);
+          addToCart(productId);
+          toggleCart(true);
+        });
+      });
+      
+      // 為快速查看按鈕添加事件
+      document.querySelectorAll('.quickViewBtn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation(); // 阻止事件冒泡到卡片
+          const productId = parseInt(btn.dataset.id);
+          openProductDetails(productId);
+        });
+      });
+    }
+    
+    // 打開商品詳情頁
+    function openProductDetails(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      
+      currentProductId = productId;
+      const isInWishlist = wishlist.some(item => item.id === productId);
+      
+      // 填充詳情頁數據
+      modalProductName.textContent = product.name;
+      modalProductImage.src = product.image;
+      modalProductImage.alt = product.name;
+      modalProductCategory.textContent = product.category;
+      modalProductPrice.textContent = `NT$${product.price}`;
+      modalProductDescription.textContent = product.description;
+      modalProductDetails.innerHTML = product.details;
+      modalProductQty.value = 1;
+      
+      // 更新收藏按鈕狀態
+      updateWishlistButtonState(isInWishlist);
+      
+      // 顯示詳情頁
+      productModal.classList.remove('hidden');
+    }
+    
+    // 更新收藏按鈕狀態
+    function updateWishlistButtonState(isInWishlist) {
+      if (isInWishlist) {
+        wishlistIconInModal.className = 'fa fa-heart mr-2 text-red-500';
+        addToWishlistFromModal.setAttribute('title', '取消收藏');
+      } else {
+        wishlistIconInModal.className = 'fa fa-heart-o mr-2';
+        addToWishlistFromModal.setAttribute('title', '收藏');
+      }
+    }
+    
+    // 關閉商品詳情頁
+    function closeProductDetails() {
+      productModal.classList.add('hidden');
+      currentProductId = null;
+    }
+    
+    // 渲染購物車
+    function renderCart() {
+      // 更新購物車計數
+      cartCount.textContent = cart.reduce((sum, item) => sum + item.qty, 0);
+      
+      if (cart.length === 0) {
+        cartItems.innerHTML = `
+          <p class="text-neutral-500 text-center py-8">目前購物車是空的。</p>
+        `;
+        cartSummary.classList.add('hidden');
+        return;
+      }
+      
+      // 顯示購物車摘要
+      cartSummary.classList.remove('hidden');
+      
+      // 渲染購物車項目
+      cartItems.innerHTML = '';
+      cart.forEach(item => {
+        const cartItem = document.createElement('div');
+        cartItem.className = 'flex items-center py-3 border-b border-neutral-100';
+        cartItem.innerHTML = `
+          <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+          <div class="ml-4 flex-grow">
+            <h4 class="font-medium text-neutral-800">${item.name}</h4>
+            <p class="text-sm text-neutral-500">NT$${item.price}</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button class="decreaseQty text-neutral-500 hover:text-primary transition-colors" data-id="${item.id}">
+              <i class="fa fa-minus-circle"></i>
+            </button>
+            <span class="text-neutral-800">${item.qty}</span>
+            <button class="increaseQty text-neutral-500 hover:text-primary transition-colors" data-id="${item.id}">
+              <i class="fa fa-plus-circle"></i>
+            </button>
+          </div>
+          <div class="ml-4">
+            <p class="font-medium text-neutral-800">NT$${item.price * item.qty}</p>
+          </div>
+          <button class="removeItem ml-4 btn-delete" data-id="${item.id}">
+            <i class="fa fa-trash"></i>
+          </button>
+        `;
+        cartItems.appendChild(cartItem);
+      });
+      
+      // 計算總金額
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const shipping = subtotal > 0 ? (subtotal >= 1000 ? 0 : 100) : 0;
+      const total = subtotal + shipping;
+      
+      // 更新金額顯示
+      subtotalEl.textContent = `NT$${subtotal}`;
+      shippingEl.textContent = `NT$${shipping}`;
+      totalEl.textContent = `NT$${total}`;
+      
+      // 為購物車按鈕添加事件
+      document.querySelectorAll('.increaseQty').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const productId = parseInt(btn.dataset.id);
+          increaseQuantity(productId);
+        });
+      });
+      
+      document.querySelectorAll('.decreaseQty').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const productId = parseInt(btn.dataset.id);
+          decreaseQuantity(productId);
+        });
+      });
+      
+      document.querySelectorAll('.removeItem').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const productId = parseInt(btn.dataset.id);
+          removeFromCart(productId);
+        });
+      });
+      
+      // 清空購物車按鈕事件
+      clearCartBtn.addEventListener('click', clearCart);
+      
+      // 保存購物車到localStorage
+      saveCart();
+    }
+    
+    // 渲染收藏夾
+    function renderWishlist() {
+      // 更新收藏夾計數
+      wishlistCount.textContent = wishlist.length;
+      
+      if (wishlist.length === 0) {
+        wishlistItems.innerHTML = `
+          <p class="text-neutral-500 text-center py-8">目前沒有收藏商品。</p>
+        `;
+        wishlistActions.classList.add('hidden');
+        return;
+      }
+      
+      // 顯示收藏夾操作按鈕
+      wishlistActions.classList.remove('hidden');
+      
+      // 渲染收藏項目
+      wishlistItems.innerHTML = '';
+      wishlist.forEach(item => {
+        const wishlistItem = document.createElement('div');
+        wishlistItem.className = 'flex items-center py-3 border-b border-neutral-100';
+        wishlistItem.innerHTML = `
+          <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+          <div class="ml-4 flex-grow">
+            <h4 class="font-medium text-neutral-800">${item.name}</h4>
+            <p class="text-sm text-neutral-500">${item.category}</p>
+            <p class="text-sm text-primary font-medium">NT$${item.price}</p>
+          </div>
+          <div class="flex space-x-2">
+            <button class="addFromWishlistToCart btn-primary text-sm py-1 px-3 rounded" data-id="${item.id}">
+              <i class="fa fa-shopping-cart mr-1"></i> 加入購物車
+            </button>
+            <button class="removeFromWishlist btn-delete" data-id="${item.id}">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        `;
+        wishlistItems.appendChild(wishlistItem);
+      });
+      
+      // 為收藏夾按鈕添加事件
+      document.querySelectorAll('.removeFromWishlist').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const productId = parseInt(btn.dataset.id);
+          removeFromWishlist(productId);
+        });
+      });
+      
+      document.querySelectorAll('.addFromWishlistToCart').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const productId = parseInt(btn.dataset.id);
+          addToCart(productId);
+          toggleWishlistPanel(false);
+          toggleCart(true);
+        });
+      });
+      
+      // 清空收藏夾按鈕事件
+      clearWishlistBtn.addEventListener('click', clearWishlist);
+      
+      // 保存收藏夾到localStorage
+      saveWishlist();
+    }
+    
+    // 搜索商品
+    function searchProducts(query) {
+      if (!query.trim()) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+      
+      const results = products.filter(product => 
+        product.name.toLowerCase().includes(query.toLowerCase()) || 
+        product.category.toLowerCase().includes(query.toLowerCase()) ||
+        product.description.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      if (results.length === 0) {
+        searchResults.innerHTML = `
+          <div class="p-4 text-neutral-500">沒有找到匹配的商品</div>
+        `;
+        searchResults.classList.remove('hidden');
+        return;
+      }
+      
+      searchResults.innerHTML = '';
+      results.forEach(product => {
+        const isInWishlist = wishlist.some(item => item.id === product.id);
+        const wishlistIconClass = isInWishlist ? 'fa-heart text-red-500' : 'fa-heart-o';
+        
+        const resultItem = document.createElement('div');
+        resultItem.className = 'p-3 hover:bg-neutral-100 transition-colors flex items-center cursor-pointer';
+        resultItem.innerHTML = `
+          <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded mr-3">
+          <div class="flex-grow">
+            <h4 class="font-medium">${product.name}</h4>
+            <p class="text-sm text-primary">NT$${product.price}</p>
+            <p class="text-xs text-neutral-500">${product.category}</p>
+          </div>
+          <button class="wishlistBtnSearch p-2" data-id="${product.id}">
+            <i class="fa ${wishlistIconClass}"></i>
+          </button>
+        `;
+        searchResults.appendChild(resultItem);
+        
+        resultItem.addEventListener('click', (e) => {
+          if (!e.target.closest('.wishlistBtnSearch')) {
+            openProductDetails(product.id);
+            searchResults.classList.add('hidden');
+            searchInput.value = '';
+            mobileSearchInput.value = '';
+          }
+        });
+        
+        // 搜索結果中的收藏按鈕
+        resultItem.querySelector('.wishlistBtnSearch').addEventListener('click', (e) => {
+          e.stopPropagation();
+          const productId = parseInt(e.currentTarget.dataset.id);
+          toggleWishlist(productId);
+          searchProducts(query); // 重新加載搜索結果以更新收藏狀態
+        });
+      });
+      
+      searchResults.classList.remove('hidden');
+    }
+    
+    // 切換商品分類
+    function switchCategory(category) {
+      currentCategory = category;
+      
+      // 更新標題
+      categoryTitle.textContent = category === 'all' ? '全部商品' : `${category}`;
+      
+      // 更新活躍的過濾按鈕
+      document.querySelectorAll('.category-badge').forEach(btn => {
+        if (btn.dataset.category === category) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      
+      // 重新渲染商品
+      renderProducts();
+      
+      // 如果是移動端，切換後關閉菜單
+      mobileMenu.classList.add('hidden');
+    }
+    
+    // 添加商品到購物車
+    function addToCart(productId, quantity = 1) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      
+      const existingItem = cart.find(item => item.id === productId);
+      
+      if (existingItem) {
+        // 若已存在該商品則數量增加
+        cart = cart.map(item => 
+          item.id === productId ? { ...item, qty: item.qty + quantity } : item
+        );
+      } else {
+        // 否則新增商品
+        cart.push({ ...product, qty: quantity });
+      }
+      
+      renderCart();
+      showToast(`已將 ${product.name} 加入購物車`);
+    }
+    
+    // 切換商品收藏狀態
+    function toggleWishlist(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      
+      const existingItemIndex = wishlist.findIndex(item => item.id === productId);
+      
+      if (existingItemIndex > -1) {
+        // 移除收藏
+        wishlist.splice(existingItemIndex, 1);
+        showToast(`已將 ${product.name} 從收藏中移除`);
+      } else {
+        // 添加收藏
+        wishlist.push({ ...product });
+        showToast(`已將 ${product.name} 加入收藏`);
+      }
+      
+      // 更新收藏相關UI
+      renderWishlist();
+      renderProducts();
+      
+      // 如果正在查看該商品的詳情頁，更新按鈕狀態
+      if (currentProductId === productId) {
+        const isInWishlist = wishlist.some(item => item.id === productId);
+        updateWishlistButtonState(isInWishlist);
+      }
+    }
+    
+    // 從收藏夾移除商品
+    function removeFromWishlist(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      
+      wishlist = wishlist.filter(item => item.id !== productId);
+      showToast(`已將 ${product.name} 從收藏中移除`);
+      
+      renderWishlist();
+      renderProducts();
+      
+      // 如果正在查看該商品的詳情頁，更新按鈕狀態
+      if (currentProductId === productId) {
+        updateWishlistButtonState(false);
+      }
+    }
+    
+    // 增加商品數量
+    function increaseQuantity(productId) {
+      cart = cart.map(item => 
+        item.id === productId ? { ...item, qty: item.qty + 1 } : item
+      );
+      renderCart();
+    }
+    
+    // 減少商品數量
+    function decreaseQuantity(productId) {
+      const itemIndex = cart.findIndex(item => item.id === productId);
+      
+      if (itemIndex !== -1) {
+        if (cart[itemIndex].qty > 1) {
+          cart = cart.map(item => 
+            item.id === productId ? { ...item, qty: item.qty - 1 } : item
+          );
+        } else {
+          const product = cart[itemIndex];
+          cart.splice(itemIndex, 1);
+          showToast(`已將 ${product.name} 從購物車移除`);
+        }
+        
+        renderCart();
+      }
+    }
+    
+    // 從購物車移除商品
+    function removeFromCart(productId) {
+      const product = cart.find(item => item.id === productId);
+      if (product) {
+        cart = cart.filter(item => item.id !== productId);
+        showToast(`已將 ${product.name} 從購物車移除`);
+        renderCart();
+      }
+    }
+    
+    // 清空購物車
+    function clearCart() {
+      if (cart.length === 0) return;
+      
+      if (confirm('確定要清空購物車嗎？')) {
+        cart = [];
+        renderCart();
+        // 關閉購物車面板
+        toggleCart(false);
+        showToast('購物車已清空');
+      }
+    }
+    
+    // 清空收藏夾
+    function clearWishlist() {
+      if (wishlist.length === 0) return;
+      
+      if (confirm('確定要清空收藏夾嗎？')) {
+        wishlist = [];
+        renderWishlist();
+        renderProducts();
+        // 關閉收藏夾面板
+        toggleWishlistPanel(false);
+        showToast('收藏夾已清空');
+      }
+    }
+    
+    // 保存購物車到localStorage
+    function saveCart() {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+    
+    // 保存收藏夾到localStorage
+    function saveWishlist() {
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    }
+    
+    // 切換購物車顯示/隱藏
+    function toggleCart(show) {
+      if (show === undefined) {
+        cartPanel.classList.toggle('hidden');
+        setTimeout(() => {
+          cartSlide.classList.toggle('translate-x-full');
+        }, 10);
+      } else if (show) {
+        cartPanel.classList.remove('hidden');
+        setTimeout(() => {
+          cartSlide.classList.remove('translate-x-full');
+        }, 10);
+      } else {
+        cartSlide.classList.add('translate-x-full');
+        setTimeout(() => {
+          cartPanel.classList.add('hidden');
+        }, 300);
+      }
+    }
+    
+    // 切換收藏夾顯示/隱藏
+    function toggleWishlistPanel(show) {
+      if (show === undefined) {
+        wishlistPanel.classList.toggle('hidden');
+        setTimeout(() => {
+          wishlistSlide.classList.toggle('translate-x-full');
+        }, 10);
+      } else if (show) {
+        wishlistPanel.classList.remove('hidden');
+        setTimeout(() => {
+          wishlistSlide.classList.remove('translate-x-full');
+        }, 10);
+      } else {
+        wishlistSlide.classList.add('translate-x-full');
+        setTimeout(() => {
+          wishlistPanel.classList.add('hidden');
+        }, 300);
+      }
+    }
+    
+    // 顯示提示訊息
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-primary text-white px-4 py-2 rounded shadow-lg z-50 transform transition-all duration-500 opacity-0 translate-y-[-20px]';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+      }, 10);
+      
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-[-20px]');
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 500);
+      }, 3000);
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      renderProducts();
+      renderCart();
+      renderWishlist();
+      
+      // 搜索功能
+      searchBtn.addEventListener('click', () => {
+        searchProducts(searchInput.value);
+      });
+      
+      searchInput.addEventListener('input', () => {
+        searchProducts(searchInput.value);
+      });
+      
+      mobileSearchBtn.addEventListener('click', () => {
+        searchProducts(mobileSearchInput.value);
+        mobileSearchContainer.classList.add('hidden');
+      });
+      
+      mobileSearchToggle.addEventListener('click', () => {
+        mobileSearchContainer.classList.toggle('hidden');
+        if (!mobileSearchContainer.classList.contains('hidden')) {
+          mobileSearchInput.focus();
+        }
+      });
+      
+      // 點擊頁面其他地方關閉搜索結果
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#searchInput, #searchBtn, #searchResults, .wishlistBtnSearch')) {
+          searchResults.classList.add('hidden');
+        }
+      });
+      
+      // 移動端菜單
+      mobileMenuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+      
+      // 分類過濾 - 確保鼠標懸停顯示手指並有交互效果
+      document.querySelectorAll('.category-badge').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchCategory(btn.dataset.category);
+        });
+      });
+      
+      // 導航欄分類鏈接
+      document.querySelectorAll('a[data-category]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchCategory(link.dataset.category);
+        });
+      });
+      
+      // 購物車相關事件
+      document.getElementById('cartToggle').addEventListener('click', () => toggleCart());
+      document.getElementById('closeCart').addEventListener('click', () => toggleCart(false));
+      
+      // 點擊購物車面板背景關閉
+      cartPanel.addEventListener('click', (e) => {
+        if (e.target === cartPanel) {
+          toggleCart(false);
+        }
+      });
+      
+      // 收藏夾相關事件
+      wishlistToggle.addEventListener('click', () => toggleWishlistPanel());
+      closeWishlist.addEventListener('click', () => toggleWishlistPanel(false));
+      
+      // 點擊收藏夾面板背景關閉
+      wishlistPanel.addEventListener('click', (e) => {
+        if (e.target === wishlistPanel) {
+          toggleWishlistPanel(false);
+        }
+      });
+      
+      // 商品詳情頁相關事件
+      closeProductModal.addEventListener('click', closeProductDetails);
+      
+      // 點擊商品詳情頁背景關閉
+      productModal.addEventListener('click', (e) => {
+        if (e.target === productModal) {
+          closeProductDetails();
+        }
+      });
+      
+      // 商品詳情頁數量調整
+      decreaseModalQty.addEventListener('click', () => {
+        if (modalProductQty.value > 1) {
+          modalProductQty.value = parseInt(modalProductQty.value) - 1;
+        }
+      });
+      
+      increaseModalQty.addEventListener('click', () => {
+        modalProductQty.value = parseInt(modalProductQty.value) + 1;
+      });
+      
+      modalProductQty.addEventListener('change', () => {
+        if (modalProductQty.value < 1 || isNaN(modalProductQty.value)) {
+          modalProductQty.value = 1;
+        }
+      });
+      
+      // 從商品詳情頁添加到購物車
+      addToCartFromModal.addEventListener('click', () => {
+        if (currentProductId) {
+          addToCart(currentProductId, parseInt(modalProductQty.value));
+          closeProductDetails();
+          toggleCart(true);
+        }
+      });
+      
+      // 從商品詳情頁添加到收藏夾
+      addToWishlistFromModal.addEventListener('click', () => {
+        if (currentProductId) {
+          toggleWishlist(currentProductId);
+        }
+      });
+      
+      // 前往結帳按鈕
+      checkoutBtn.addEventListener('click', () => {
+        if (cart.length === 0) return;
+        
+        showToast('跳轉到結帳頁面');
+        // 實際應用中，這裡會跳轉到結帳頁面
+      });
+      
+      // 點擊ESC鍵關閉所有打開的面板
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeProductDetails();
+          toggleCart(false);
+          toggleWishlistPanel(false);
+          searchResults.classList.add('hidden');
+          mobileMenu.classList.add('hidden');
+          mobileSearchContainer.classList.add('hidden');
+        }
+      });
+    });
+  </script>
